@@ -12,7 +12,7 @@ typedef struct State_ {
 
 #define ROTR32(X, Y) (((X) >> (Y)) | ((X) << (32 - (Y))))
 
-static void
+void
 state_sbox(State *st)
 {
     const uint32_t  rc[8] = { 0xb7e15162, 0xbf715880, 0x38b4da56, 0x324e7738,
@@ -21,35 +21,21 @@ state_sbox(State *st)
     uint32_t *const y     = &st->y[0];
     size_t          i;
 
-    HalfState xr;
-    HalfState yr;
     for (i = 0; i < 8; i++) {
-        yr[i] = ROTR32(y[i], 31);
+        x[i] += ROTR32(y[i], 31);
     }
     for (i = 0; i < 8; i++) {
-        x[i] += yr[i];
-    }
-    for (i = 0; i < 8; i++) {
-        xr[i] = ROTR32(x[i], 24);
-    }
-    for (i = 0; i < 8; i++) {
-        y[i] += xr[i];
+        y[i] += ROTR32(x[i], 24);
     }
     for (i = 0; i < 8; i++) {
         x[i] ^= rc[i];
     }
 
     for (i = 0; i < 8; i++) {
-        yr[i] = ROTR32(y[i], 17);
+        x[i] += ROTR32(y[i], 17);
     }
     for (i = 0; i < 8; i++) {
-        x[i] += yr[i];
-    }
-    for (i = 0; i < 8; i++) {
-        xr[i] = ROTR32(x[i], 17);
-    }
-    for (i = 0; i < 8; i++) {
-        y[i] += xr[i];
+        y[i] += ROTR32(x[i], 17);
     }
     for (i = 0; i < 8; i++) {
         x[i] ^= rc[i];
@@ -59,26 +45,17 @@ state_sbox(State *st)
         x[i] += y[i];
     }
     for (i = 0; i < 8; i++) {
-        xr[i] = ROTR32(x[i], 31);
-    }
-    for (i = 0; i < 8; i++) {
-        y[i] += xr[i];
+        y[i] += ROTR32(x[i], 31);
     }
     for (i = 0; i < 8; i++) {
         x[i] ^= rc[i];
     }
 
     for (i = 0; i < 8; i++) {
-        yr[i] = ROTR32(y[i], 24);
+        x[i] += ROTR32(y[i], 24);
     }
     for (i = 0; i < 8; i++) {
-        x[i] += yr[i];
-    }
-    for (i = 0; i < 8; i++) {
-        xr[i] = ROTR32(x[i], 16);
-    }
-    for (i = 0; i < 8; i++) {
-        y[i] += xr[i];
+        y[i] += ROTR32(x[i], 16);
     }
     for (i = 0; i < 8; i++) {
         x[i] ^= rc[i];
