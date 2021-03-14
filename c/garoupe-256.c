@@ -3,12 +3,27 @@
 
 #include "garoupe-256.h"
 
+#if !defined(__clang__) && !defined(__GNUC__)
+#ifdef __attribute__
+#undef __attribute__
+#endif
+#define __attribute__(a)
+#endif
+
+#ifndef CRYPTO_ALIGN
+#if defined(__INTEL_COMPILER) || defined(_MSC_VER)
+#define CRYPTO_ALIGN(x) __declspec(align(x))
+#else
+#define CRYPTO_ALIGN(x) __attribute__((aligned(x)))
+#endif
+#endif
+
 typedef uint32_t HalfState[8];
 
 typedef struct State_ {
     HalfState x;
     HalfState y;
-} State __attribute__((aligned(32)));
+} State CRYPTO_ALIGN(32);
 
 #define ROTR32(X, Y) (((X) >> (Y)) | ((X) << (32 - (Y))))
 
