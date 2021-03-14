@@ -44,6 +44,6 @@ Raspberry Pi 3 (vs non-fixsliced software AES)
        aes256-gcm:         16 MiB/s
 ```
 
-## Specification, security analysis
+## Specification, design rationale, security analysis
 
 TBD.
