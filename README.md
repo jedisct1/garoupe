@@ -12,6 +12,9 @@ Garoupe-256 is an **experimental** authenticated cipher with the following prope
 
 Unique (nonce, key) pairs are required for each message. Reuse with different messages would immediately disclose the difference between plaintexts and allow forgery. However, nonces can be randomly chosen with negligible collision probability.
 
+Garoupe was not designed for constrained environments, nor to be competitive with AES-based constructions where AES acceleration is available.
+It specifically targets WebAssembly as well as mobile, desktop and server CPUs with no hardware AES support.
+
 ## Benchmarks
 
 WebAssembly (WAVM, vs non-fixsliced software AES)
