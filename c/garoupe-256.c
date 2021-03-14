@@ -95,7 +95,7 @@ state_update(State *st, uint64_t d1, uint64_t d2)
 }
 
 static void
-state_init(State *st, const uint8_t key[32], const uint8_t nonce[20])
+state_init(State *restrict st, const uint8_t key[32], const uint8_t nonce[20])
 {
     static const HalfState x0 = { 0x243f6a88, 0x85a308d3, 0x13198a2e,
                                   0x03707344, 0xa4093822, 0x299f31d0,
@@ -107,11 +107,14 @@ state_init(State *st, const uint8_t key[32], const uint8_t nonce[20])
 
     memcpy(st->x, x0, sizeof st->x);
     memcpy(st->y, y0, sizeof st->y);
+
+    uint8_t *x8 = (uint8_t *) st->x;
+    uint8_t *y8 = (uint8_t *) st->y;
     for (i = 0; i < 32; i++) {
-        ((unsigned char *) st->x)[i] ^= key[i];
+        x8[i] ^= key[i];
     }
     for (i = 0; i < 20; i++) {
-        ((unsigned char *) st->y)[i] ^= nonce[i];
+        y8[i] ^= nonce[i];
     }
     for (i = 0; i < 20; i++) {
         state_update(st, i, i);
@@ -119,7 +122,7 @@ state_init(State *st, const uint8_t key[32], const uint8_t nonce[20])
 }
 
 static void
-enc(State *st, uint8_t dst[16], const uint8_t src[16])
+enc(State *restrict st, uint8_t dst[16], const uint8_t src[16])
 {
     size_t   i;
     uint8_t  c[16];
@@ -136,7 +139,7 @@ enc(State *st, uint8_t dst[16], const uint8_t src[16])
 }
 
 static void
-dec(State *st, uint8_t dst[16], const uint8_t src[16])
+dec(State *restrict st, uint8_t dst[16], const uint8_t src[16])
 {
     size_t   i;
     uint8_t  m[16];
@@ -153,7 +156,7 @@ dec(State *st, uint8_t dst[16], const uint8_t src[16])
 }
 
 static void
-mac(State *st, uint8_t tag[16], size_t ad_len, size_t m_len)
+mac(State *restrict st, uint8_t tag[16], size_t ad_len, size_t m_len)
 {
     size_t i;
     for (i = 0; i < 10; i++) {
@@ -238,8 +241,8 @@ garoupe256_decrypt(uint8_t *m, const uint8_t *c, size_t c_len,
         dec(&st, dst, src);
         memcpy(m + i, dst, c_len % 16);
         memset(dst, 0, c_len % 16);
-        uint8_t *st8_1 = &((uint8_t *) &st)[0];
-        uint8_t *st8_2 = &((uint8_t *) &st)[32];
+        uint8_t *restrict st8_1 = &((uint8_t *) &st)[0];
+        uint8_t *restrict st8_2 = &((uint8_t *) &st)[32];
         for (i = 0; i < 8; i++) {
             st8_1[i] ^= dst[i];
             st8_2[i] ^= dst[i + 8];
