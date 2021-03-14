@@ -12,7 +12,7 @@ typedef struct State_ {
 
 #define ROTR32(X, Y) (((X) >> (Y)) | ((X) << (32 - (Y))))
 
-void
+static void
 state_sbox(State *st)
 {
     const uint32_t  rc[8] = { 0xb7e15162, 0xbf715880, 0x38b4da56, 0x324e7738,
@@ -163,9 +163,10 @@ mac(State *st, uint8_t tag[16], size_t ad_len, size_t m_len)
 }
 
 void
-encrypt(uint8_t *c, uint8_t tag[MACBYTES], const uint8_t *m, size_t m_len,
-        const uint8_t *ad, size_t ad_len, const uint8_t nonce[NONCEBYTES],
-        const uint8_t key[KEYBYTES])
+garoupe256_encrypt(uint8_t *c, uint8_t tag[garoupe256_MACBYTES],
+                   const uint8_t *m, size_t m_len, const uint8_t *ad,
+                   size_t ad_len, const uint8_t nonce[garoupe256_NONCEBYTES],
+                   const uint8_t key[garoupe256_KEYBYTES])
 {
     State   st;
     uint8_t src[16];
@@ -194,9 +195,10 @@ encrypt(uint8_t *c, uint8_t tag[MACBYTES], const uint8_t *m, size_t m_len,
 }
 
 int
-decrypt(uint8_t *m, const uint8_t tag[MACBYTES], const uint8_t *c, size_t c_len,
-        const uint8_t *ad, size_t ad_len, const uint8_t nonce[NONCEBYTES],
-        const uint8_t key[KEYBYTES])
+garoupe256_decrypt(uint8_t *m, const uint8_t *c, size_t c_len,
+                   const uint8_t tag[garoupe256_MACBYTES], const uint8_t *ad,
+                   size_t ad_len, const uint8_t nonce[garoupe256_NONCEBYTES],
+                   const uint8_t key[garoupe256_KEYBYTES])
 {
     State   st;
     uint8_t src[16];

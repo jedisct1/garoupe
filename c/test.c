@@ -8,8 +8,8 @@
 int
 main(void)
 {
-    uint8_t key[KEYBYTES];
-    uint8_t nonce[NONCEBYTES];
+    uint8_t key[garoupe256_KEYBYTES];
+    uint8_t nonce[garoupe256_NONCEBYTES];
     uint8_t ad[20];
     uint8_t m[100];
 
@@ -19,11 +19,12 @@ main(void)
     memset(m, 0x04, sizeof m);
 
     uint8_t c[100];
-    uint8_t tag[MACBYTES];
-    encrypt(c, tag, m, sizeof m, ad, sizeof ad, nonce, key);
+    uint8_t tag[garoupe256_MACBYTES];
+    garoupe256_encrypt(c, tag, m, sizeof m, ad, sizeof ad, nonce, key);
 
     uint8_t m2[100];
-    if (decrypt(m2, tag, c, sizeof c, ad, sizeof ad, nonce, key) != 0) {
+    if (garoupe256_decrypt(m2, c, sizeof c, tag, ad, sizeof ad, nonce, key) !=
+        0) {
         puts("Authentication failed");
     }
     if (memcmp(m, m2, sizeof m) != 0) {
