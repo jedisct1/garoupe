@@ -128,10 +128,10 @@ enc(State *st, uint8_t dst[16], const uint8_t src[16])
     for (i = 0; i < 16; i++) {
         c[i] = src[i] ^ st8_1[i] ^ st8_2[i];
     }
-    memcpy(dst, c, 16);
     uint64_t d1, d2;
     memcpy(&d1, src, 8);
     memcpy(&d2, src + 8, 8);
+    memcpy(dst, c, 16);
     state_update(st, d1, d2);
 }
 
@@ -145,10 +145,10 @@ dec(State *st, uint8_t dst[16], const uint8_t src[16])
     for (i = 0; i < 16; i++) {
         m[i] = src[i] ^ st8_1[i] ^ st8_2[i];
     }
-    memcpy(dst, m, 16);
     uint64_t d1, d2;
-    memcpy(&d1, dst, 8);
-    memcpy(&d2, dst + 8, 8);
+    memcpy(&d1, m, 8);
+    memcpy(&d2, m + 8, 8);
+    memcpy(dst, m, 16);
     state_update(st, d1, d2);
 }
 
