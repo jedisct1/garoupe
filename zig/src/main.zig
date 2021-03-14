@@ -90,7 +90,7 @@ const State = struct {
     fn mac(state: *State, adlen: usize, mlen: usize) [16]u8 {
         var i: usize = 0;
         while (i < 10) : (i += 1) {
-            state.update(adlen, mlen);
+            state.update(@intCast(u64, adlen), @intCast(u64, mlen));
         }
         var tag: [16]u8 = undefined;
         var state128 = state.as128();
