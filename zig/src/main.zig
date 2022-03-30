@@ -3,9 +3,8 @@ const crypto = std.crypto;
 const debug = std.debug;
 const math = std.math;
 const mem = std.mem;
-const Vector = std.meta.Vector;
 
-const HalfState = Vector(8, u32);
+const HalfState = @Vector(8, u32);
 
 const State = struct {
     x: HalfState,
@@ -41,7 +40,7 @@ const State = struct {
         return @ptrCast(*[4]u128, state);
     }
 
-    const rc = Vector(8, u32){ 0xb7e15162, 0xbf715880, 0x38b4da56, 0x324e7738, 0xbb1185eb, 0x4f7c7b57, 0xcfbfa1c8, 0xc2b3293d };
+    const rc = @Vector(8, u32){ 0xb7e15162, 0xbf715880, 0x38b4da56, 0x324e7738, 0xbb1185eb, 0x4f7c7b57, 0xcfbfa1c8, 0xc2b3293d };
 
     fn sbox(state: *State) void {
         const x = &state.x;
