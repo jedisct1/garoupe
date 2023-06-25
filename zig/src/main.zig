@@ -19,10 +19,10 @@ const State = struct {
                 0x452821e6, 0x38d01377, 0xbe5466cf, 0x34e90c6c, 0xc0ac29b7, 0xc97c50dd, 0x3f84d5b5, 0xb5470917,
             },
         };
-        for (mem.asBytes(&state.x)[0..key.len]) |*x, i| {
+        for (mem.asBytes(&state.x)[0..key.len], 0..) |*x, i| {
             x.* ^= key[i];
         }
-        for (mem.asBytes(&state.y)[0..nonce.len]) |*y, i| {
+        for (mem.asBytes(&state.y)[0..nonce.len], 0..) |*y, i| {
             y.* ^= nonce[i];
         }
         var i: usize = 0;
@@ -33,11 +33,11 @@ const State = struct {
     }
 
     fn as64(state: *State) *[8]u64 {
-        return @ptrCast(*[8]u64, state);
+        return @as(*[8]u64, @ptrCast(state));
     }
 
     fn as128(state: *State) *[4]u128 {
-        return @ptrCast(*[4]u128, state);
+        return @as(*[4]u128, @ptrCast(state));
     }
 
     const rc = @Vector(8, u32){ 0xb7e15162, 0xbf715880, 0x38b4da56, 0x324e7738, 0xbb1185eb, 0x4f7c7b57, 0xcfbfa1c8, 0xc2b3293d };
@@ -63,7 +63,7 @@ const State = struct {
         const state_p = state.as64().*;
         state.sbox();
         var state64 = state.as64();
-        for (state64) |*x, i| {
+        for (state64, 0..) |*x, i| {
             x.* ^= state_p[(i -% 1) % 8];
         }
         state64[0] ^= d1;
@@ -75,7 +75,7 @@ const State = struct {
         var state128 = state.as128();
         const c = m ^ state128[1] ^ state128[3];
         mem.writeIntLittle(u128, dst, c);
-        state.update(@truncate(u64, m), @truncate(u64, m >> 64));
+        state.update(@truncate(m), @truncate(m >> 64));
     }
 
     fn dec(state: *State, dst: *[16]u8, src: *const [16]u8) void {
@@ -83,13 +83,13 @@ const State = struct {
         var state128 = state.as128();
         const m = c ^ state128[1] ^ state128[3];
         mem.writeIntLittle(u128, dst, m);
-        state.update(@truncate(u64, m), @truncate(u64, m >> 64));
+        state.update(@truncate(m), @truncate(m >> 64));
     }
 
     fn mac(state: *State, adlen: usize, mlen: usize) [16]u8 {
         var i: usize = 0;
         while (i < 10) : (i += 1) {
-            state.update(@intCast(u64, adlen), @intCast(u64, mlen));
+            state.update(@intCast(adlen), @intCast(mlen));
         }
         var tag: [16]u8 = undefined;
         var state128 = state.as128();
@@ -113,8 +113,8 @@ pub const Garoupe256 = struct {
             state.enc(&dst, ad[i..][0..16]);
         }
         if (ad.len % 16 != 0) {
-            mem.set(u8, src[0..], 0);
-            mem.copy(u8, src[0 .. ad.len % 16], ad[i .. i + ad.len % 16]);
+            @memset(src[0..], 0);
+            @memcpy(src[0 .. ad.len % 16], ad[i .. i + ad.len % 16]);
             state.enc(&dst, &src);
         }
         i = 0;
@@ -122,10 +122,10 @@ pub const Garoupe256 = struct {
             state.enc(c[i..][0..16], m[i..][0..16]);
         }
         if (m.len % 16 != 0) {
-            mem.set(u8, src[0..], 0);
-            mem.copy(u8, src[0 .. m.len % 16], m[i .. i + m.len % 16]);
+            @memset(src[0..], 0);
+            @memcpy(src[0 .. m.len % 16], m[i .. i + m.len % 16]);
             state.enc(&dst, &src);
-            mem.copy(u8, c[i .. i + m.len % 16], dst[0 .. m.len % 16]);
+            @memcpy(c[i .. i + m.len % 16], dst[0 .. m.len % 16]);
         }
         tag.* = state.mac(ad.len, m.len);
     }
@@ -140,8 +140,8 @@ pub const Garoupe256 = struct {
             state.enc(&dst, ad[i..][0..16]);
         }
         if (ad.len % 16 != 0) {
-            mem.set(u8, src[0..], 0);
-            mem.copy(u8, src[0 .. ad.len % 16], ad[i .. i + ad.len % 16]);
+            @memset(src[0..], 0);
+            @memcpy(src[0 .. ad.len % 16], ad[i .. i + ad.len % 16]);
             state.enc(&dst, &src);
         }
         i = 0;
@@ -149,18 +149,18 @@ pub const Garoupe256 = struct {
             state.dec(m[i..][0..16], c[i..][0..16]);
         }
         if (m.len % 16 != 0) {
-            mem.set(u8, src[0..], 0);
-            mem.copy(u8, src[0 .. m.len % 16], c[i .. i + m.len % 16]);
+            @memset(src[0..], 0);
+            @memcpy(src[0 .. m.len % 16], c[i .. i + m.len % 16]);
             state.dec(&dst, &src);
-            mem.copy(u8, m[i .. i + m.len % 16], dst[0 .. m.len % 16]);
-            mem.set(u8, dst[0 .. m.len % 16], 0);
+            @memcpy(m[i .. i + m.len % 16], dst[0 .. m.len % 16]);
+            @memset(dst[0 .. m.len % 16], 0);
             var state64 = state.as64();
             state64[0] ^= mem.readIntLittle(u64, dst[0..8]);
             state64[4] ^= mem.readIntLittle(u64, dst[8..16]);
         }
         const computed_tag = state.mac(ad.len, m.len);
         if (!crypto.utils.timingSafeEql([16]u8, computed_tag, tag)) {
-            mem.set(u8, m, 0xaa);
+            @memset(m, 0xaa);
             return error.AuthenticationFailed;
         }
     }
