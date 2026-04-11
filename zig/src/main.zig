@@ -71,18 +71,18 @@ const State = struct {
     }
 
     fn enc(state: *State, dst: *[16]u8, src: *const [16]u8) void {
-        const m = mem.readIntSliceLittle(u128, src);
-        var state128 = state.as128();
+        const m = mem.readInt(u128, src, .little);
+        const state128 = state.as128();
         const c = m ^ state128[1] ^ state128[3];
-        mem.writeIntLittle(u128, dst, c);
+        mem.writeInt(u128, dst, c, .little);
         state.update(@truncate(m), @truncate(m >> 64));
     }
 
     fn dec(state: *State, dst: *[16]u8, src: *const [16]u8) void {
-        const c = mem.readIntSliceLittle(u128, src);
-        var state128 = state.as128();
+        const c = mem.readInt(u128, src, .little);
+        const state128 = state.as128();
         const m = c ^ state128[1] ^ state128[3];
-        mem.writeIntLittle(u128, dst, m);
+        mem.writeInt(u128, dst, m, .little);
         state.update(@truncate(m), @truncate(m >> 64));
     }
 
@@ -92,8 +92,8 @@ const State = struct {
             state.update(@intCast(adlen), @intCast(mlen));
         }
         var tag: [16]u8 = undefined;
-        var state128 = state.as128();
-        mem.writeIntLittle(u128, &tag, state128[0] ^ state128[1] ^ state128[2] ^ state128[3]);
+        const state128 = state.as128();
+        mem.writeInt(u128, &tag, state128[0] ^ state128[1] ^ state128[2] ^ state128[3], .little);
         return tag;
     }
 };
@@ -155,11 +155,11 @@ pub const Garoupe256 = struct {
             @memcpy(m[i .. i + m.len % 16], dst[0 .. m.len % 16]);
             @memset(dst[0 .. m.len % 16], 0);
             var state64 = state.as64();
-            state64[0] ^= mem.readIntLittle(u64, dst[0..8]);
-            state64[4] ^= mem.readIntLittle(u64, dst[8..16]);
+            state64[0] ^= mem.readInt(u64, dst[0..8], .little);
+            state64[4] ^= mem.readInt(u64, dst[8..16], .little);
         }
         const computed_tag = state.mac(ad.len, m.len);
-        if (!crypto.utils.timingSafeEql([16]u8, computed_tag, tag)) {
+        if (!crypto.timing_safe.eql([16]u8, computed_tag, tag)) {
             @memset(m, 0xaa);
             return error.AuthenticationFailed;
         }
@@ -172,10 +172,10 @@ test "Garoupe256 test with random inputs" {
     var ad: [20]u8 = undefined;
     var m: [100]u8 = undefined;
 
-    crypto.random.bytes(&key);
-    crypto.random.bytes(&nonce);
-    crypto.random.bytes(&ad);
-    crypto.random.bytes(&m);
+    std.testing.io.random(&key);
+    std.testing.io.random(&nonce);
+    std.testing.io.random(&ad);
+    std.testing.io.random(&m);
 
     var tag: [Garoupe256.tag_length]u8 = undefined;
     var c: [m.len]u8 = undefined;
