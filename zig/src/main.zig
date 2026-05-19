@@ -199,10 +199,10 @@ test "Garoupe256 test with random inputs" {
 }
 
 test "Garoupe256 test vector" {
-    const key = [_]u8{0x01} ** Garoupe256.key_length;
-    const nonce = [_]u8{0x02} ** Garoupe256.nonce_length;
-    const ad = [_]u8{0x03} ** 20;
-    const m = [_]u8{0x04} ** 100;
+    const key: [Garoupe256.key_length]u8 = @splat(0x01);
+    const nonce: [Garoupe256.nonce_length]u8 = @splat(0x02);
+    const ad: [20]u8 = @splat(0x03);
+    const m: [100]u8 = @splat(0x04);
 
     var tag: [Garoupe256.tag_length]u8 = undefined;
     var c: [m.len]u8 = undefined;
